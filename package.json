@@ -1,0 +1,16 @@
+{
+  "engines": {
+    "node": "19"
+  },
+  "dependencies": {
+    "graphql": "^16.6.0",
+    "is-plain-obj": "^4.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.7.1"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  }
+}
