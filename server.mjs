@@ -31,13 +31,6 @@ function validateOperation(operation) {
   }
 }
 
-function respond(res, data) {
-  const json = JSON.stringify(data);
-  const chunk = Buffer.from(json, "utf8");
-  res.setHeader("Content-Length", String(chunk.length));
-  res.end(chunk);
-}
-
 // GraphQL over HTTP spec:
 // https://github.com/graphql/graphql-over-http/blob/main/spec/GraphQLOverHTTP.md
 const server = http.createServer((req, res) => {
@@ -88,9 +81,9 @@ const server = http.createServer((req, res) => {
       try {
         document = parse(operation.query);
       } catch (error) {
-        res.statusCode = 400;
-        res.statusMessage = "GraphQL parse error";
-        return respond(res, { errors: [error] });
+        return res
+          .writeHead(400, "GraphQL parse error")
+          .end(JSON.stringify({ errors: [error] }));
       }
 
       // Step 2: Validate query.
@@ -105,9 +98,9 @@ const server = http.createServer((req, res) => {
       // Uses `specifiedRules` by default if not provided.
       const validationErrors = validate(schema, document, rules);
       if (validationErrors.length > 0) {
-        res.statusCode = 400;
-        res.statusMessage = "GraphQL validation error";
-        return respond(res, { errors: validationErrors });
+        return res
+          .writeHead(400, "GraphQL validation error")
+          .end(JSON.stringify({ errors: validationErrors }));
       }
 
       // Step 3: Execute.
@@ -126,8 +119,7 @@ const server = http.createServer((req, res) => {
         // Check type of error (instanceof checks), mask unexpected errors.
       }
 
-      res.statusCode = 200;
-      respond(res, response);
+      res.writeHead(200).end(JSON.stringify(response));
     });
     // Handle CORS preflight requests:
   } else if (req.method === "OPTIONS") {
